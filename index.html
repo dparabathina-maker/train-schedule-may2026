@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=3.0">
+    <title>Family Train Schedule</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-bottom: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .journey-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .journey-grid {
+                grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            }
+        }
+
+        .journey-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .journey-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 15px 18px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .train-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .train-meta {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .route-visual {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        .station {
+            background: #3498db;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .route-line {
+            flex: 1;
+            height: 3px;
+            background: #bdc3c7;
+            margin: 0 10px;
+            position: relative;
+            border-radius: 2px;
+        }
+
+        .train-icon {
+            position: absolute;
+            top: -30px;
+            left: 0%;
+            display: flex;
+            align-items: center;
+            filter: drop-shadow(3px 3px 8px rgba(0,0,0,0.3));
+        }
+
+        .train-onward {
+            animation: steamLocomotiveForward 10s ease-in-out infinite;
+        }
+
+        .train-return {
+            animation: steamLocomotiveBackward 10s ease-in-out infinite;
+        }
+
+        @keyframes steamLocomotiveForward {
+            0% { left: -30%; opacity: 0; transform: scale(0.7); }
+            15% { opacity: 1; transform: scale(1); }
+            85% { opacity: 1; transform: scale(1); }
+            100% { left: 110%; opacity: 0; transform: scale(0.7); }
+        }
+
+        @keyframes steamLocomotiveBackward {
+            0% { left: 110%; opacity: 0; transform: scale(0.7) scaleX(-1); }
+            15% { opacity: 1; transform: scale(1) scaleX(-1); }
+            85% { opacity: 1; transform: scale(1) scaleX(-1); }
+            100% { left: -30%; opacity: 0; transform: scale(0.7) scaleX(-1); }
+        }
+
+        .locomotive-svg {
+            width: 100%;
+            max-width: 150px;
+            height: 50px;
+        }
+
+        @media (max-width: 768px) {
+            .locomotive-svg {
+                height: 60px;
+                max-width: 200px;
+            }
+        }
+
+        .wheel {
+            animation: wheelRotate 0.5s linear infinite;
+            transform-origin: center;
+        }
+
+        @keyframes wheelRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .steam-cloud {
+            animation: steamBillowing 2s ease-out infinite;
+        }
+
+        @keyframes steamBillowing {
+            0% { 
+                opacity: 0; 
+                transform: translate(0, 0) scale(0.2);
+            }
+            10% {
+                opacity: 0.9;
+                transform: translate(-2px, -5px) scale(0.4);
+            }
+            30% {
+                opacity: 0.8;
+                transform: translate(-8px, -15px) scale(0.7);
+            }
+            50% {
+                opacity: 0.6;
+                transform: translate(-18px, -25px) scale(1.1);
+            }
+            70% {
+                opacity: 0.4;
+                transform: translate(-30px, -35px) scale(1.4);
+            }
+            90% {
+                opacity: 0.2;
+                transform: translate(-45px, -45px) scale(1.6);
+            }
+            100% { 
+                opacity: 0; 
+                transform: translate(-60px, -55px) scale(1.2);
+            }
+        }
+
+        .steam-cloud:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .steam-cloud:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .steam-cloud:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        .steam-cloud:nth-child(4) {
+            animation-delay: 0.9s;
+        }
+
+        .steam-cloud:nth-child(5) {
+            animation-delay: 1.2s;
+        }
+
+        .steam-puff {
+            animation: steamBillowing 2.5s ease-out infinite;
+        }
+
+        .realistic-train {
+            display: flex;
+            align-items: center;
+            gap: 1px;
+            position: relative;
+        }
+
+        .train-sound {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: #2c3e50;
+            font-weight: bold;
+            animation: trainChugChug 2s ease-in-out infinite;
+            white-space: nowrap;
+        }
+
+        @keyframes trainChugChug {
+            0% { 
+                opacity: 0;
+                content: "🚂";
+            }
+            20% {
+                opacity: 1;
+                content: "CHOO";
+            }
+            40% {
+                opacity: 1;
+                content: "CHOO";
+            }
+            60% {
+                opacity: 1;
+                content: "CHUK";
+            }
+            80% {
+                opacity: 1;
+                content: "CHUK";
+            }
+            100% {
+                opacity: 0;
+                content: "CHUK";
+            }
+        }
+
+        .steam-effect {
+            position: absolute;
+            top: -15px;
+            left: -25px;
+            animation: steamPuff 1.8s ease-out infinite;
+            font-size: 14px;
+        }
+
+        .train-return .steam-effect {
+            left: auto;
+            right: -25px;
+        }
+
+        @keyframes steamPuff {
+            0% { 
+                opacity: 0.9; 
+                transform: translateY(0) scale(0.7);
+            }
+            30% {
+                opacity: 0.7;
+                transform: translateY(-8px) scale(1.1);
+            }
+            70% {
+                opacity: 0.3;
+                transform: translateY(-18px) scale(1.4);
+            }
+            100% { 
+                opacity: 0; 
+                transform: translateY(-28px) scale(0.5);
+            }
+        }
+
+        .train-wheels {
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            right: 0;
+            font-size: 8px;
+            animation: wheelRotation 0.3s linear infinite;
+        }
+
+        @keyframes wheelRotation {
+            0% { content: "●●●●●●"; }
+            25% { content: "○●●●●○"; }
+            50% { content: "○○●●○○"; }
+            75% { content: "○○○○○○"; }
+            100% { content: "●●●●●●"; }
+        }
+
+        .train-whistle {
+            position: absolute;
+            top: -30px;
+            left: -30px;
+            animation: whistleSound 5s ease-in-out infinite;
+            font-size: 12px;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        @keyframes whistleSound {
+            0%, 90% { 
+                opacity: 0;
+                content: "";
+            }
+            95% {
+                opacity: 1;
+                content: "♪ CHOOOOO ♪";
+            }
+            100% {
+                opacity: 0;
+                content: "";
+            }
+        }
+
+        @keyframes modernTrain {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(10deg); }
+            66% { transform: translateY(10px) rotate(-5deg); }
+        }
+
+        /* Passenger faces at stations */
+        .station {
+            background: #3498db;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            min-width: 100px;
+            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .passenger-faces {
+            display: flex;
+            gap: 2px;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .face {
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .duration {
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2c3e50;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+        }
+
+        .details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        .detail-box {
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 6px;
+            border-left: 3px solid #3498db;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            color: #7f8c8d;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            font-size: 0.9rem;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .passengers {
+            margin-bottom: 10px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .passenger-title {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .passenger-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .passenger-tag {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .passenger-tag.waitlist {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            touch-action: manipulation;
+        }
+
+        @media (max-width: 768px) {
+            .btn {
+                padding: 18px 15px;
+                font-size: 1.1rem;
+                min-height: 50px;
+            }
+        }
+
+        .btn-download {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-track {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin-top: 5px;
+        }
+
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #b6d7f2;
+            color: #0c5460;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin-top: 5px;
+        }
+
+        .emergency {
+            background: #dc3545;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .split-card {
+            grid-column: 1 / -1;
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+
+        @media (max-width: 768px) {
+            .journey-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .details {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+        }
+        
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .locomotive-svg {
+                height: 60px !important;
+                max-width: 220px !important;
+            }
+            
+            .btn {
+                padding: 18px 15px !important;
+                font-size: 1.1rem !important;
+                min-height: 50px !important;
+            }
+            
+            .actions {
+                flex-direction: column !important;
+                gap: 12px !important;
+            }
+            
+            .train-title {
+                font-size: 1.3rem !important;
+            }
+            
+            .train-meta {
+                font-size: 1rem !important;
+            }
+            
+            .passenger-tag {
+                padding: 8px 12px !important;
+                font-size: 0.8rem !important;
+                margin: 3px !important;
+            }
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🚂 Family Train Schedule</h1>
+            <p class="subtitle">May 11-13, 2026 • 7 People • Chirala ↔ Visakhapatnam</p>
+        </div>
+
+        <div class="journey-grid">
+            <!-- Journey 1 -->
+            <div class="journey-card">
+                <div class="card-header">
+                    <div class="train-title">Day 1: Chirala → Guntur</div>
+                    <div class="train-meta">May 11 • 12:10 PM → 1:39 PM</div>
+                </div>
+                <div class="route-visual">
+                    <div class="station">
+                        Chirala
+                        <div class="passenger-faces">
+                            <div class="face" title="Jawaharlal">👨🏽‍🦳</div>
+                            <div class="face" title="Sharifunisa">👩🏽‍🦳</div>
+                            <div class="face" title="Padmaja">👩🏽</div>
+                            <div class="face" title="Gamanlal">👨🏽</div>
+                        </div>
+                    </div>
+                    <div class="route-line">
+                        <div class="train-icon train-onward">
+                            <svg class="locomotive-svg" viewBox="0 0 120 40" style="transform: scaleX(-1);" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Steam Clouds from Smokestack -->
+                                <g class="steam-puff">
+                                    <ellipse cx="15" cy="12" rx="4" ry="3" fill="#f0f0f0" opacity="0.9"/>
+                                </g>
+                                <g class="steam-puff">
+                                    <ellipse cx="16" cy="10" rx="5" ry="3" fill="#e8e8e8" opacity="0.8"/>
+                                </g>
+                                <g class="steam-puff">
+                                    <ellipse cx="17" cy="8" rx="6" ry="4" fill="#d8d8d8" opacity="0.7"/>
+                                </g>
+                                <g class="steam-puff">
+                                    <ellipse cx="18" cy="6" rx="7" ry="4" fill="#c8c8c8" opacity="0.6"/>
+                                </g>
+                                <g class="steam-puff">
+                                    <ellipse cx="19" cy="4" rx="8" ry="5" fill="#b8b8b8" opacity="0.5"/>
+                                </g>
+                                
+                                <!-- Locomotive Body -->
+                                <rect x="10" y="20" width="35" height="15" rx="3" fill="#2c3e50" stroke="#1a252f" stroke-width="1"/>
+                                
+                                <!-- Boiler -->
+                                <ellipse cx="27" cy="27" rx="15" ry="7" fill="#34495e" stroke="#2c3e50" stroke-width="1"/>
+                                
+                                <!-- Smokestack -->
+                                <rect x="13" y="15" width="4" height="8" fill="#1a252f"/>
+                                <rect x="12" y="13" width="6" height="2" fill="#2c3e50"/>
+                                
+                                <!-- Cab -->
+                                <rect x="35" y="18" width="10" height="12" fill="#2c3e50" stroke="#1a252f" stroke-width="1"/>
+                                
+                                <!-- Wheels -->
+                                <circle class="wheel" cx="20" cy="33" r="5" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+                                <circle class="wheel" cx="35" cy="33" r="5" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+                                
+                                <!-- Wheel Details -->
+                                <circle cx="20" cy="33" r="2" fill="#2c3e50"/>
+                                <circle cx="35" cy="33" r="2" fill="#2c3e50"/>
+                                
+                                <!-- Cars -->
+                                <rect x="50" y="22" width="20" height="12" rx="2" fill="#c0392b" stroke="#922b21" stroke-width="1"/>
+                                <circle cx="55" cy="33" r="3" fill="#34495e" stroke="#2c3e50" stroke-width="1"/>
+                                <circle cx="65" cy="33" r="3" fill="#34495e" stroke="#2c3e50" stroke-width="1"/>
+                                
+                                <rect x="75" y="22" width="20" height="12" rx="2" fill="#c0392b" stroke="#922b21" stroke-width="1"/>
+                                <circle cx="80" cy="33" r="3" fill="#34495e" stroke="#2c3e50" stroke-width="1"/>
+                                <circle cx="90" cy="33" r="3" fill="#34495e" stroke="#2c3e50" stroke-width="1"/>
+                                
+                                <rect x="100" y="22" width="15" height="12" rx="2" fill="#c0392b" stroke="#922b21" stroke-width="1"/>
+                                <circle cx="105" cy="33" r="3" fill="#34495e" stroke="#2c3e50" stroke-width="1"/>
+                                <circle cx="110" cy="33" r="3" fill="#34495e" stroke="#2c3e50" stroke-width="1"/>
+                            </svg>
+                        </div>
+                        <div class="duration">1h 29m</div>
+                    </div>
+                    <div class="station">Guntur</div>
+                </div>
+                <div class="details">
+                    <div class="detail-box">
+                        <div class="detail-label">Train</div>
+                        <div class="detail-value">12077 BZA Janshatabdi</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">PNR & Class</div>
+                        <div class="detail-value">4236687119 • CC Air Conditioned</div>
+                    </div>
+                </div>
+                <div class="passengers">
+                    <div class="passenger-title">Passengers (4)</div>
+                    <div class="passenger-list">
+                        <span class="passenger-tag">Jawaharlal (C2/50/Window)</span>
+                        <span class="passenger-tag">Sharifunisa (C2/51)</span>
+                        <span class="passenger-tag">Padmaja (C2/52)</span>
+                        <span class="passenger-tag">Gamanlal (C2/53)</span>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-download" onclick="downloadTicket('Chirala_to_guntur_on_11_may.pdf')">📧 Get Ticket</button>
+                    <button class="btn btn-track" onclick="trackTrain('12077')">📍 Track Train</button>
+                </div>
+                <div class="info">🏠 Evening at Kiran's house in Guntur</div>
+            </div>
+
+            <!-- Journey 2 -->
+            <div class="journey-card">
+                <div class="card-header">
+                    <div class="train-title">Night: Guntur → Visakhapatnam</div>
+                    <div class="train-meta">May 11 • 11:55 PM → 6:30 AM (May 12)</div>
+                </div>
+                <div class="route-visual">
+                    <div class="station">
+                        Guntur Jn
+                        <div class="passenger-faces">
+                            <div class="face" title="Jawaharlal">👴🏽</div>
+                            <div class="face" title="Sharifunisa">👵🏽</div>
+                            <div class="face" title="Padmaja">👩🏽</div>
+                            <div class="face" title="Gamanlal">👨🏽</div>
+                            <div class="face" title="Kiranlal">👨🏽</div>
+                            <div class="face" title="Prathiba">👩🏽</div>
+                        </div>
+                    </div>
+                    <div class="route-line">
+                        <div class="train-icon train-onward">
+                            <svg class="locomotive-svg" viewBox="0 0 140 40" style="width: 140px; transform: scaleX(-1);" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Steam Clouds from Smokestack -->
+                                <g class="steam-puff">
+                                    <ellipse cx="15" cy="12" rx="4" ry="3" fill="#f0f0f0" opacity="0.9"/>
+                                </g>
+                                <g class="steam-puff">
+                                    <ellipse cx="16" cy="10" rx="5" ry="3" fill="#e8e8e8" opacity="0.8"/>
+                                </g>
+                                <g class="steam-puff">
+                                    <ellipse cx="17" cy="8" rx="6" ry="4" fill="#d8d8d8" opacity="0.7"/>
+                                </g>
+                                <g class="steam-puff">
+                                    <ellipse cx="18" cy="6" rx="7" ry="4" fill="#c8c8c8" opacity="0.6"/>
+                                </g>
+                                <g class="steam-puff">
+                                    <ellipse cx="19" cy="4" rx="8" ry="5" fill="#b8b8b8" opacity="0.5"/>
+                                </g>
+                                
+                                <!-- Locomotive Body -->
+                                <rect x="10" y="20" width="35" height="15" rx="3" fill="#2c3e50" stroke="#1a252f" stroke-width="1"/>
+                                <ellipse cx="27" cy="27" rx="15" ry="7" fill="#34495e" stroke="#2c3e50" stroke-width="1"/>
+                                <rect x="13" y="15" width="4" height="8" fill="#1a252f"/>
+                                <rect x="12" y="13" width="6" height="2" fill="#2c3e50"/>
+                                <rect x="35" y="18" width="10" height="12" fill="#2c3e50" stroke="#1a252f" stroke-width="1"/>
+                                
+                                <!-- Wheels -->
+                                <circle class="wheel" cx="20" cy="33" r="5" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+                                <circle class="wheel" cx="35" cy="33" r="5" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+                                <circle cx="20" cy="33" r="2" fill="#2c3e50"/>
+                                <circle cx="35" cy="33" r="2" fill="#2c3e50"/>
+                                
+                                <!-- Cars (5 for night train) -->
+                                <rect x="50" y="22" width="18" height="12" rx="2" fill="#8e44ad" stroke="#7d3c98" stroke-width="1"/>
+                                <circle cx="55" cy="33" r="3" fill="#34495e"/>
+                                <circle cx="63" cy="33" r="3" fill="#34495e"/>
+                                
+                                <rect x="72" y="22" width="18" height="12" rx="2" fill="#8e44ad" stroke="#7d3c98" stroke-width="1"/>
+                                <circle cx="77" cy="33" r="3" fill="#34495e"/>
+                                <circle cx="85" cy="33" r="3" fill="#34495e"/>
+                                
+                                <rect x="94" y="22" width="18" height="12" rx="2" fill="#8e44ad" stroke="#7d3c98" stroke-width="1"/>
+                                <circle cx="99" cy="33" r="3" fill="#34495e"/>
+                                <circle cx="107" cy="33" r="3" fill="#34495e"/>
+                                
+                                <rect x="116" y="22" width="18" height="12" rx="2" fill="#8e44ad" stroke="#7d3c98" stroke-width="1"/>
+                                <circle cx="121" cy="33" r="3" fill="#34495e"/>
+                                <circle cx="129" cy="33" r="3" fill="#34495e"/>
+                            </svg>
+                        </div>
+                        <div class="duration">6h 35m</div>
+                    </div>
+                    <div class="station">Visakhapatnam</div>
+                </div>
+                <div class="details">
+                    <div class="detail-box">
+                        <div class="detail-label">Train</div>
+                        <div class="detail-value">22204 VSKP Duronto</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">PNR & Class</div>
+                        <div class="detail-value">4436686796 • 2A AC</div>
+                    </div>
+                </div>
+                <div class="passengers">
+                    <div class="passenger-title">Passengers (6) - Kiranlal & Prathiba join</div>
+                    <div class="passenger-list">
+                        <span class="passenger-tag">Jawaharlal (A2/4/Upper)</span>
+                        <span class="passenger-tag">Sharifuisa (A2/3/Lower)</span>
+                        <span class="passenger-tag">Kiranlal (A2/5/Side Lower)</span>
+                        <span class="passenger-tag">Prathiba (A2/6/Side Upper)</span>
+                        <span class="passenger-tag">Padmaja (A2/8/Upper)</span>
+                        <span class="passenger-tag waitlist">Gamanlal (RLWL/1)</span>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-download" onclick="downloadTicket('guntur_to_vishakapatnam_11th_may_travel_tickets_for_6_members.pdf')">📧 Get Ticket</button>
+                    <button class="btn btn-track" onclick="trackTrain('22204')">📍 Track Train</button>
+                    <button class="btn" style="background: #e74c3c; color: white;" onclick="checkGamanlalPNR()">⚠️ Check Gamanlal PNR</button>
+                </div>
+                <div class="warning">⚠️ Gamanlal's seat waitlisted - check confirmation</div>
+            </div>
+
+            <!-- Day 2 -->
+            <div class="journey-card">
+                <div class="card-header">
+                    <div class="train-title">Day 2: Visakhapatnam</div>
+                    <div class="train-meta">May 12 • Full Day</div>
+                </div>
+                <div class="info">📍 Spend day in Visakhapatnam<br>👥 Dhaniklal joins group (7 people total)</div>
+            </div>
+
+            <!-- Return Split -->
+            <div class="journey-card split-card">
+                <div class="card-header" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+                    <div class="train-title">Return: Groups Split - Same Train</div>
+                    <div class="train-meta">May 12 • 7:20 PM from Visakhapatnam</div>
+                </div>
+                <div class="route-visual">
+                    <div class="station">
+                        Visakhapatnam
+                        <div class="passenger-faces">
+                            <div class="face" title="Jawaharlal">👴🏽</div>
+                            <div class="face" title="Sharifunisa">👵🏽</div>
+                            <div class="face" title="Kiranlal">👨🏽</div>
+                            <div class="face" title="Prathiba">👩🏽</div>
+                            <div class="face" title="Padmaja">👩🏽</div>
+                            <div class="face" title="Dhaniklal">👨🏽‍🦲</div>
+                            <div class="face" title="Gamanlal">👨🏽</div>
+                        </div>
+                    </div>
+                    <div class="route-line">
+                        <div class="train-icon train-return">
+                            <svg class="locomotive-svg" viewBox="0 0 130 40" style="width: 130px;" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Steam Clouds from Smokestack -->
+                                <g class="steam-puff">
+                                    <ellipse cx="15" cy="12" rx="4" ry="3" fill="#f0f0f0" opacity="0.9"/>
+                                </g>
+                                <g class="steam-puff">
+                                    <ellipse cx="16" cy="10" rx="5" ry="3" fill="#e8e8e8" opacity="0.8"/>
+                                </g>
+                                <g class="steam-puff">
+                                    <ellipse cx="17" cy="8" rx="6" ry="4" fill="#d8d8d8" opacity="0.7"/>
+                                </g>
+                                <g class="steam-puff">
+                                    <ellipse cx="18" cy="6" rx="7" ry="4" fill="#c8c8c8" opacity="0.6"/>
+                                </g>
+                                <g class="steam-puff">
+                                    <ellipse cx="19" cy="4" rx="8" ry="5" fill="#b8b8b8" opacity="0.5"/>
+                                </g>
+                                
+                                <!-- Locomotive Body -->
+                                <rect x="10" y="20" width="35" height="15" rx="3" fill="#2c3e50" stroke="#1a252f" stroke-width="1"/>
+                                <ellipse cx="27" cy="27" rx="15" ry="7" fill="#34495e" stroke="#2c3e50" stroke-width="1"/>
+                                <rect x="13" y="15" width="4" height="8" fill="#1a252f"/>
+                                <rect x="12" y="13" width="6" height="2" fill="#2c3e50"/>
+                                <rect x="35" y="18" width="10" height="12" fill="#2c3e50" stroke="#1a252f" stroke-width="1"/>
+                                
+                                <!-- Wheels -->
+                                <circle class="wheel" cx="20" cy="33" r="5" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+                                <circle class="wheel" cx="35" cy="33" r="5" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+                                <circle cx="20" cy="33" r="2" fill="#2c3e50"/>
+                                <circle cx="35" cy="33" r="2" fill="#2c3e50"/>
+                                
+                                <!-- Mixed Cars -->
+                                <rect x="50" y="22" width="18" height="12" rx="2" fill="#8e44ad" stroke="#7d3c98" stroke-width="1"/>
+                                <circle cx="55" cy="33" r="3" fill="#34495e"/>
+                                <circle cx="63" cy="33" r="3" fill="#34495e"/>
+                                
+                                <rect x="72" y="22" width="18" height="12" rx="2" fill="#8e44ad" stroke="#7d3c98" stroke-width="1"/>
+                                <circle cx="77" cy="33" r="3" fill="#34495e"/>
+                                <circle cx="85" cy="33" r="3" fill="#34495e"/>
+                                
+                                <rect x="94" y="22" width="18" height="12" rx="2" fill="#e67e22" stroke="#d68910" stroke-width="1"/>
+                                <circle cx="99" cy="33" r="3" fill="#34495e"/>
+                                <circle cx="107" cy="33" r="3" fill="#34495e"/>
+                                
+                                <rect x="116" y="22" width="14" height="12" rx="2" fill="#e67e22" stroke="#d68910" stroke-width="1"/>
+                                <circle cx="121" cy="33" r="3" fill="#34495e"/>
+                            </svg>
+                        </div>
+                        <div class="duration">7h-9h</div>
+                    </div>
+                    <div class="station">Split Exits</div>
+                </div>
+                <div class="details">
+                    <div class="detail-box">
+                        <div class="detail-label">Train</div>
+                        <div class="detail-value">17244 RGDA GNT Express</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">Strategy</div>
+                        <div class="detail-value">Same train, different stops</div>
+                    </div>
+                </div>
+                <div class="passengers">
+                    <div class="passenger-title">Group A → Guntur (PNR: 6502286560)</div>
+                    <div class="passenger-list">
+                        <span class="passenger-tag">Jawaharlal (A1/37/Lower)</span>
+                        <span class="passenger-tag">Sharifunisa (A1/39/Lower)</span>
+                        <span class="passenger-tag">Kiranlal (A1/38/Upper)</span>
+                        <span class="passenger-tag">Prathiba (A1/40/Upper)</span>
+                        <span class="passenger-tag">Padmaja (A1/42/Side Upper)</span>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-download" onclick="downloadTicket('Vishakpatanam_to_guntur_on_12_may_2026.pdf')">📧 Group A Ticket</button>
+                    <button class="btn btn-download" onclick="downloadTicket('Dhanik_Ticket_from_vishakpatanma_to_vijayawada.pdf')">📧 Group B Ticket</button>
+                    <button class="btn btn-track" onclick="trackTrain('17244')">📍 Track Train</button>
+                </div>
+                <div class="info">🚗 Group A: Arrive 4:50 AM, take car to Chirala</div>
+                
+                <!-- Group B Info in same card -->
+                <div class="passengers" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+                    <div class="passenger-title">Group B → Vijayawada (PNR: 6402286505) - Same train, exit early</div>
+                    <div class="passenger-list">
+                        <span class="passenger-tag">Dhaniklal (A1/33/Lower)</span>
+                        <span class="passenger-tag">Gamanlal (A1/43/Lower)</span>
+                    </div>
+                    <div class="info" style="margin-top: 8px;">⚠️ Exit at Vijayawada 2:55 AM • Then connect to final train</div>
+                </div>
+            </div>
+
+            <!-- Final Journey -->
+            <div class="journey-card">
+                <div class="card-header">
+                    <div class="train-title">Final: Vijayawada → Chirala</div>
+                    <div class="train-meta">May 13 • 3:40 AM → 5:24 AM</div>
+                </div>
+                <div class="route-visual">
+                    <div class="station">
+                        Vijayawada
+                        <div class="passenger-faces">
+                            <div class="face" title="Dhaniklal">👨🏽‍🦲</div>
+                            <div class="face" title="Gamanlal">👨🏽</div>
+                        </div>
+                    </div>
+                    <div class="route-line">
+                        <div class="train-icon train-onward">
+                            <svg class="locomotive-svg" viewBox="0 0 120 40" style="transform: scaleX(-1);" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Steam Clouds from Smokestack -->
+                                <g class="steam-puff">
+                                    <ellipse cx="15" cy="12" rx="4" ry="3" fill="#f0f0f0" opacity="0.9"/>
+                                </g>
+                                <g class="steam-puff">
+                                    <ellipse cx="16" cy="10" rx="5" ry="3" fill="#e8e8e8" opacity="0.8"/>
+                                </g>
+                                <g class="steam-puff">
+                                    <ellipse cx="17" cy="8" rx="6" ry="4" fill="#d8d8d8" opacity="0.7"/>
+                                </g>
+                                <g class="steam-puff">
+                                    <ellipse cx="18" cy="6" rx="7" ry="4" fill="#c8c8c8" opacity="0.6"/>
+                                </g>
+                                <g class="steam-puff">
+                                    <ellipse cx="19" cy="4" rx="8" ry="5" fill="#b8b8b8" opacity="0.5"/>
+                                </g>
+                                
+                                <!-- Locomotive Body -->
+                                <rect x="10" y="20" width="35" height="15" rx="3" fill="#2c3e50" stroke="#1a252f" stroke-width="1"/>
+                                <ellipse cx="27" cy="27" rx="15" ry="7" fill="#34495e" stroke="#2c3e50" stroke-width="1"/>
+                                <rect x="13" y="15" width="4" height="8" fill="#1a252f"/>
+                                <rect x="12" y="13" width="6" height="2" fill="#2c3e50"/>
+                                <rect x="35" y="18" width="10" height="12" fill="#2c3e50" stroke="#1a252f" stroke-width="1"/>
+                                
+                                <!-- Wheels -->
+                                <circle class="wheel" cx="20" cy="33" r="5" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+                                <circle class="wheel" cx="35" cy="33" r="5" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+                                <circle cx="20" cy="33" r="2" fill="#2c3e50"/>
+                                <circle cx="35" cy="33" r="2" fill="#2c3e50"/>
+                                
+                                <!-- Sleeper Cars -->
+                                <rect x="50" y="22" width="20" height="12" rx="2" fill="#e67e22" stroke="#d68910" stroke-width="1"/>
+                                <circle cx="55" cy="33" r="3" fill="#34495e"/>
+                                <circle cx="65" cy="33" r="3" fill="#34495e"/>
+                                
+                                <rect x="75" y="22" width="20" height="12" rx="2" fill="#e67e22" stroke="#d68910" stroke-width="1"/>
+                                <circle cx="80" cy="33" r="3" fill="#34495e"/>
+                                <circle cx="90" cy="33" r="3" fill="#34495e"/>
+                                
+                                <rect x="100" y="22" width="15" height="12" rx="2" fill="#e67e22" stroke="#d68910" stroke-width="1"/>
+                                <circle cx="105" cy="33" r="3" fill="#34495e"/>
+                                <circle cx="110" cy="33" r="3" fill="#34495e"/>
+                            </svg>
+                        </div>
+                        <div class="duration">1h 44m</div>
+                    </div>
+                    <div class="station">Chirala</div>
+                </div>
+                <div class="details">
+                    <div class="detail-box">
+                        <div class="detail-label">Train</div>
+                        <div class="detail-value">12710 Simhapuri SF</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">PNR & Class</div>
+                        <div class="detail-value">4136686779 • SL Non-AC</div>
+                    </div>
+                </div>
+                <div class="passengers">
+                    <div class="passenger-title">Passengers (2)</div>
+                    <div class="passenger-list">
+                        <span class="passenger-tag">P Dhaniklal (S1/1/Lower)</span>
+                        <span class="passenger-tag">P Gamanlal (S1/4/Lower)</span>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-download" onclick="downloadTicket('vijawada_to_Chirala_train_tickets_for_gaman_and_dhanik.pdf')">📧 Get Ticket</button>
+                    <button class="btn btn-track" onclick="trackTrain('12710')">📍 Track Train</button>
+                </div>
+                <div class="warning">⏰ Tight 45-min connection at Vijayawada</div>
+            </div>
+        </div>
+
+        <div class="emergency">
+            🚨 Emergency: Railway 139 • Medical 108 • Police 100 • IRCTC 14646
+        </div>
+    </div>
+
+    <script>
+        function downloadTicket(filename) {
+            alert(`To get your ticket: \n\n1. Check your email for ticket confirmation\n2. Visit IRCTC website: www.irctc.co.in\n3. Use your PNR number to download\n\nPNR numbers are shown on this page for each journey.`);
+        }
+
+        function trackTrain(trainNumber) {
+            const url = `https://enquiry.indianrail.gov.in/mntes/q?reqType=reqLiveStatus&action=inputLiveStatus&trainNo=${trainNumber}`;
+            window.open(url, '_blank');
+        }
+
+        function checkPNR(pnrNumber) {
+            // Open IRCTC PNR status page
+            const url = `https://www.irctc.co.in/nget/train-search`;
+            window.open(url, '_blank');
+            
+            // Show alert with PNR for easy copy-paste
+            setTimeout(() => {
+                alert(`PNR to check: ${pnrNumber}\n\nCopy this number and paste it in the IRCTC website that just opened.`);
+            }, 500);
+        }
+
+        function checkMultiplePNR(pnrNumbers) {
+            // Open IRCTC PNR status page
+            const url = `https://www.irctc.co.in/nget/train-search`;
+            window.open(url, '_blank');
+            
+            // Show alert with multiple PNRs
+            setTimeout(() => {
+                const pnrList = pnrNumbers.join('\n');
+                alert(`PNR numbers to check:\n\n${pnrList}\n\nCopy these numbers one by one and check them in the IRCTC website that just opened.`);
+            }, 500);
+        }
+
+        function checkGamanlalPNR() {
+            // Special function for Gamanlal's waitlisted ticket
+            const url = `https://www.irctc.co.in/nget/train-search`;
+            window.open(url, '_blank');
+            
+            setTimeout(() => {
+                alert(`🚨 IMPORTANT: Gamanlal's Waitlisted Ticket\n\nPNR: 4436686796\n\nThis ticket is currently RLWL/1 (waitlisted).\nCheck if it got confirmed before travel!\n\nIf not confirmed, Gamanlal cannot board the train.`);
+            }, 500);
+        }
+    </script>
+</body>
+</html>
