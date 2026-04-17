@@ -1034,7 +1034,12 @@
 
     <script>
         function downloadTicket(filename) {
-            alert(`To get your ticket: \n\n1. Check your email for ticket confirmation\n2. Visit IRCTC website: www.irctc.co.in\n3. Use your PNR number to download\n\nPNR numbers are shown on this page for each journey.`);
+            const a = document.createElement('a');
+            a.href = 'tickets/' + filename;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
         function trackTrain(trainNumber) {
